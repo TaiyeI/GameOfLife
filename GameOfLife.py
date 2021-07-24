@@ -34,7 +34,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            while event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 #Checking for mouseclicks
                 if event.button == 1:
                     pos = pygame.mouse.get_pos()
@@ -43,7 +43,6 @@ def main():
         
         drawCells()
         drawButtons()
-        lifeAlert()
         drawGrid()
         pygame.display.update()
         #FPSCLOCK.tick(FPS)
@@ -54,7 +53,7 @@ def main():
 WINDOWHEIGHT = height
 GRIDHEIGHT = width
 GRIDWIDTH = width
-numOfCells = 5
+numOfCells = 9
 CELLSIZE = int(width/numOfCells)
 BUTTONHEIGHT = GRIDWIDTH*(50/270)
 BUTTONWIDTH = GRIDWIDTH*(70/270)
@@ -129,30 +128,34 @@ def clicked(pos):
             for y in range(numOfCells):
                 #cells[x,y].setHighlighted(random.randint(0,2))
                 if cells[x,y].rect.collidepoint(pos):
-                    if cells[x,y].life == 1:
+                    if cells[x,y].highlighted == 1:
+                        cells[x,y].setHighlighted(0)
                         cells[x,y].setLife(0)
-                    elif cells[x,y].life == 0:
+                    elif cells[x,y].highlighted == 0:
+                        cells[x,y].setHighlighted(1)
                         cells[x,y].setLife(1)
     if buttons[playButtonPos,0].rect.collidepoint(pos):
         playGame()
+        lifeAlert()
         
 
 def playGame():
     newCells = cells
     for x in range(numOfCells):
             for y in range(numOfCells):
-                if cells[x,y].life:
-                    if checkNeighbours(x,y) == 2 or 3:
+                if cells[x,y].highlighted:
+                    if checkNeighbours(x,y) == 2:
                         newCells[x,y].setLife(1)
-                    if checkNeighbours(x,y) <= 2:
+                    if checkNeighbours(x,y) == 3:
+                        newCells[x,y].setLife(1)
+                    if checkNeighbours(x,y) < 2:
                         newCells[x,y].setLife(0)
                     if checkNeighbours(x,y) >= 4:
                         newCells[x,y].setLife(0)
-                    else:
-                        newCells[x,y].setLife(0)
-                if cells[x,y].life == 0:
+                if cells[x,y].highlighted == 0:
                     if checkNeighbours(x,y) == 3:
                         newCells[x,y].setLife(1)
+                print(checkNeighbours(1,1))
                     
     
     
@@ -168,7 +171,7 @@ def checkNeighbours(x,y):
         for j in range(y-1, y+2):
             if (i,j) != (x,y):
                 try:
-                    if cells[i,j].life:
+                    if cells[i,j].highlighted:
                         neighbours += 1
                         if x == 1 and y == 1:
                             pass
