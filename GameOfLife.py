@@ -12,10 +12,12 @@ buttons = {}
 
 FPS = 20
 FPSCLOCK = pygame.time.Clock()
+drawing = False
+erasure = False
 
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Game of Life")
-screen.fill(pygame.Color("white"))
+screen.fill(pygame.Color("lightblue"))
 
 BASICFONTSIZE = int(width/14.4)
 BASICFONT = pygame.font.Font('freesansbold.ttf', BASICFONTSIZE)
@@ -39,8 +41,16 @@ def main():
                 if event.button == 1:
                     pos = pygame.mouse.get_pos()
                     clicked(pos)
-
-        
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_q:
+                    switchDrawing()
+                if event.key == pygame.K_w:
+                    switchErasure()
+        pos = pygame.mouse.get_pos()
+        if drawing == True:
+            draw(pos)
+        if erasure == True:
+            erase(pos)
         drawCells()
         drawButtons()
         drawGrid()
@@ -53,11 +63,13 @@ def main():
 WINDOWHEIGHT = height
 GRIDHEIGHT = width
 GRIDWIDTH = width
-numOfCells = 9
+numOfCells = 20
 CELLSIZE = int(width/numOfCells)
 BUTTONHEIGHT = GRIDWIDTH*(50/270)
 BUTTONWIDTH = GRIDWIDTH*(70/270)
+buttonSpace = int(GRIDWIDTH/3)
 playButtonPos = int((GRIDWIDTH/3 - BUTTONWIDTH)/2)
+drawButtonPos = playButtonPos + buttonSpace
 
 def drawGrid():
     for x in range(0, GRIDWIDTH, CELLSIZE):
@@ -98,13 +110,20 @@ class CellBlock:
 
 class Buttons:
     def __init__(self, x, y):
-        self.name = "button"
         self.x = x
         self.y = y
         self.rect = pygame.Rect(self.x, int(WINDOWHEIGHT*0.70), BUTTONWIDTH, BUTTONHEIGHT)
    
-    def drawbutton(self, screen):
+    def drawPlayButton(self, screen):
         pygame.draw.rect(screen, pygame.Color('gray'), self.rect)
+    
+    def drawDrawButton(self, screen):
+        pygame.draw.rect(screen, pygame.Color('black'), self.rect)
+    
+    def drawInputBox(self, screen):
+        pygame.draw.rect(screen, pygame.Color('white'), self.rect)
+
+
 
 def drawCells():
     for x in range(numOfCells):
@@ -114,16 +133,17 @@ def drawCells():
 def drawButtons():
     y = 0
     #for x in range(int((GRIDWIDTH/3 - BUTTONWIDTH)/2), GRIDWIDTH, int(GRIDWIDTH/3)):
-    buttons[playButtonPos,0].drawbutton(screen)
+    buttons[playButtonPos,0].drawPlayButton(screen)
+    buttons[drawButtonPos, 0].drawDrawButton(screen)
         #Displaying solve button
     '''if x == 10:
             solveButton = BASICFONT.render(str("Solve"), True, (0,0,0))
             screen.blit(solveButton, (x+10,int(WINDOWHEIGHT*0.73) ))'''
 
 
-def clicked(pos):
+def clicked(pos, selected=True):
+    global drawing
     if pos[1]>0 and pos[1]<GRIDHEIGHT:
-        #print(pos)
         for x in range(numOfCells):
             for y in range(numOfCells):
                 #cells[x,y].setHighlighted(random.randint(0,2))
@@ -135,9 +155,53 @@ def clicked(pos):
                         cells[x,y].setHighlighted(1)
                         cells[x,y].setLife(1)
     if buttons[playButtonPos,0].rect.collidepoint(pos):
+        '''continue = true
+        while no new events, and while continue = true
+            for all cells check if they are alive
+                if they are alive:
+                    continue = true
+                    time.sleep(0.5 seconds)
+                    playGame()
+                if they aren't alive:
+                    continue =false'''
         playGame()
         lifeAlert()
+    if buttons[drawButtonPos,0].rect.collidepoint(pos):
+        time.sleep(2)
+        switchDrawing()
         
+
+def draw(pos):
+    for x in range(numOfCells):
+            for y in range(numOfCells):
+                if cells[x,y].rect.collidepoint(pos):
+                    if cells[x,y].highlighted == 0:
+                            cells[x,y].setHighlighted(1)
+                            cells[x,y].setLife(1)
+def erase(pos):
+    for x in range(numOfCells):
+            for y in range(numOfCells):
+                if cells[x,y].rect.collidepoint(pos):
+                    if cells[x,y].highlighted == 1:
+                            cells[x,y].setHighlighted(0)
+                            cells[x,y].setLife(0)
+
+
+#make action a class??
+def switchDrawing():
+    global drawing
+    if drawing == True:
+            drawing = False
+    elif drawing == False:
+            drawing = True
+
+def switchErasure():
+    global erasure
+    if erasure == True:
+        erasure = False
+    elif erasure == False:
+        erasure = True
+    
 
 def playGame():
     newCells = cells
@@ -155,11 +219,6 @@ def playGame():
                 if cells[x,y].highlighted == 0:
                     if checkNeighbours(x,y) == 3:
                         newCells[x,y].setLife(1)
-                print(checkNeighbours(1,1))
-                    
-    
-    
-    
 
     #Any cell with 2/3 neighbours survive
     #Any cell with 3<neighbours dies
@@ -176,9 +235,7 @@ def checkNeighbours(x,y):
                         if x == 1 and y == 1:
                             pass
                 except:
-                    pass
-                '''if x == 1 and y == 1:
-                    print(i,j, neighbours)'''           
+                    pass     
     return neighbours
         
 def lifeAlert():
@@ -188,5 +245,7 @@ def lifeAlert():
                     cells[x,y].setHighlighted(1)
                 else:
                     cells[x,y].setHighlighted(0)
+
+
 
 main()
