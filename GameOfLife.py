@@ -1,6 +1,7 @@
 import pygame, sys
 import time
 import random
+from operator import pos
 
 pygame.init()
 
@@ -12,8 +13,10 @@ buttons = {}
 
 FPS = 20
 FPSCLOCK = pygame.time.Clock()
+
 drawing = False
 erasure = False
+playing = False
 
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Game of Life")
@@ -51,6 +54,8 @@ def main():
             draw(pos)
         if erasure == True:
             erase(pos)
+        if playing == True:
+            clicked((playButtonPos, buttonsYPos))
         drawCells()
         drawButtons()
         drawGrid()
@@ -63,13 +68,14 @@ def main():
 WINDOWHEIGHT = height
 GRIDHEIGHT = width
 GRIDWIDTH = width
-numOfCells = 20
+numOfCells = 5
 CELLSIZE = int(width/numOfCells)
 BUTTONHEIGHT = GRIDWIDTH*(50/270)
 BUTTONWIDTH = GRIDWIDTH*(70/270)
 buttonSpace = int(GRIDWIDTH/3)
 playButtonPos = int((GRIDWIDTH/3 - BUTTONWIDTH)/2)
 drawButtonPos = playButtonPos + buttonSpace
+buttonsYPos = int(WINDOWHEIGHT*0.70)
 
 def drawGrid():
     for x in range(0, GRIDWIDTH, CELLSIZE):
@@ -85,7 +91,7 @@ def defCells():
 
 
 def defButtons():
-    y = 0
+    y = buttonsYPos
     for x in range(playButtonPos, GRIDWIDTH, int(GRIDWIDTH/3)):
         buttons[x,y] = Buttons(x, y)
             
@@ -112,7 +118,7 @@ class Buttons:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-        self.rect = pygame.Rect(self.x, int(WINDOWHEIGHT*0.70), BUTTONWIDTH, BUTTONHEIGHT)
+        self.rect = pygame.Rect(self.x, buttonsYPos, BUTTONWIDTH, BUTTONHEIGHT)
    
     def drawPlayButton(self, screen):
         pygame.draw.rect(screen, pygame.Color('gray'), self.rect)
@@ -133,16 +139,17 @@ def drawCells():
 def drawButtons():
     y = 0
     #for x in range(int((GRIDWIDTH/3 - BUTTONWIDTH)/2), GRIDWIDTH, int(GRIDWIDTH/3)):
-    buttons[playButtonPos,0].drawPlayButton(screen)
-    buttons[drawButtonPos, 0].drawDrawButton(screen)
+    buttons[playButtonPos,buttonsYPos].drawPlayButton(screen)
+    buttons[drawButtonPos, buttonsYPos].drawDrawButton(screen)
         #Displaying solve button
     '''if x == 10:
             solveButton = BASICFONT.render(str("Solve"), True, (0,0,0))
             screen.blit(solveButton, (x+10,int(WINDOWHEIGHT*0.73) ))'''
 
 
-def clicked(pos, selected=True):
+def clicked(pos):
     global drawing
+    global playing
     if pos[1]>0 and pos[1]<GRIDHEIGHT:
         for x in range(numOfCells):
             for y in range(numOfCells):
@@ -154,7 +161,9 @@ def clicked(pos, selected=True):
                     elif cells[x,y].highlighted == 0:
                         cells[x,y].setHighlighted(1)
                         cells[x,y].setLife(1)
-    if buttons[playButtonPos,0].rect.collidepoint(pos):
+        #return False
+    if buttons[playButtonPos,buttonsYPos].rect.collidepoint(pos):
+        time.sleep(1)
         '''continue = true
         while no new events, and while continue = true
             for all cells check if they are alive
@@ -166,8 +175,12 @@ def clicked(pos, selected=True):
                     continue =false'''
         playGame()
         lifeAlert()
-    if buttons[drawButtonPos,0].rect.collidepoint(pos):
-        time.sleep(2)
+        if staticCells():
+            playing = True
+        else:
+            playing = False
+    if buttons[drawButtonPos,buttonsYPos].rect.collidepoint(pos):
+        #return False
         switchDrawing()
         
 
@@ -204,21 +217,21 @@ def switchErasure():
     
 
 def playGame():
-    newCells = cells
+    global cells
     for x in range(numOfCells):
             for y in range(numOfCells):
                 if cells[x,y].highlighted:
                     if checkNeighbours(x,y) == 2:
-                        newCells[x,y].setLife(1)
+                        cells[x,y].setLife(1)
                     if checkNeighbours(x,y) == 3:
-                        newCells[x,y].setLife(1)
+                        cells[x,y].setLife(1)
                     if checkNeighbours(x,y) < 2:
-                        newCells[x,y].setLife(0)
+                        cells[x,y].setLife(0)
                     if checkNeighbours(x,y) >= 4:
-                        newCells[x,y].setLife(0)
+                        cells[x,y].setLife(0)
                 if cells[x,y].highlighted == 0:
                     if checkNeighbours(x,y) == 3:
-                        newCells[x,y].setLife(1)
+                        cells[x,y].setLife(1)
 
     #Any cell with 2/3 neighbours survive
     #Any cell with 3<neighbours dies
@@ -245,6 +258,15 @@ def lifeAlert():
                     cells[x,y].setHighlighted(1)
                 else:
                     cells[x,y].setHighlighted(0)
+
+def staticCells():
+    cont = False
+    for x in range(numOfCells):
+        for y in range(numOfCells):
+            if cells[x,y].life:
+                cont = True
+    return cont
+
 
 
 
