@@ -17,6 +17,7 @@ FPSCLOCK = pygame.time.Clock()
 drawing = False
 erasure = False
 playing = False
+paused = True
 
 screen = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Game of Life")
@@ -164,6 +165,7 @@ def clicked(pos):
         #return False
     if buttons[playButtonPos,buttonsYPos].rect.collidepoint(pos):
         time.sleep(1)
+        pauser()
         '''continue = true
         while no new events, and while continue = true
             for all cells check if they are alive
@@ -175,12 +177,13 @@ def clicked(pos):
                     continue =false'''
         playGame()
         lifeAlert()
-        if staticCells():
+        if staticCells() and not pauser():
             playing = True
         else:
             playing = False
+        playing = paused
+        print(paused)
     if buttons[drawButtonPos,buttonsYPos].rect.collidepoint(pos):
-        #return False
         switchDrawing()
         
 
@@ -267,7 +270,12 @@ def staticCells():
                 cont = True
     return cont
 
-
+def pauser():
+    global paused
+    if paused == True:
+        paused = False
+    else:
+        paused = True
 
 
 main()
