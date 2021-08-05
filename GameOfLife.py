@@ -31,6 +31,7 @@ pygame.display.flip()
 
 
 def main():
+    global playing
 
     defCells()
     defButtons()
@@ -47,9 +48,11 @@ def main():
                     clicked(pos)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q:
-                    switchDrawing()
+                    toggleDrawing()
                 if event.key == pygame.K_w:
-                    switchErasure()
+                    toggleErasure()
+                if event.key == pygame.K_SPACE:
+                    togglePlaying()
         pos = pygame.mouse.get_pos()
         if drawing == True:
             draw(pos)
@@ -69,13 +72,14 @@ def main():
 WINDOWHEIGHT = height
 GRIDHEIGHT = width
 GRIDWIDTH = width
-numOfCells = 5
+numOfCells = 100
 CELLSIZE = int(width/numOfCells)
 BUTTONHEIGHT = GRIDWIDTH*(50/270)
 BUTTONWIDTH = GRIDWIDTH*(70/270)
 buttonSpace = int(GRIDWIDTH/3)
 playButtonPos = int((GRIDWIDTH/3 - BUTTONWIDTH)/2)
 drawButtonPos = playButtonPos + buttonSpace
+pauseButtonPos = drawButtonPos + buttonSpace
 buttonsYPos = int(WINDOWHEIGHT*0.70)
 
 def drawGrid():
@@ -95,7 +99,8 @@ def defButtons():
     y = buttonsYPos
     for x in range(playButtonPos, GRIDWIDTH, int(GRIDWIDTH/3)):
         buttons[x,y] = Buttons(x, y)
-            
+        print(x,y)
+           
 
 class CellBlock:
     def __init__(self, x , y, CELLSIZE):
@@ -127,8 +132,12 @@ class Buttons:
     def drawDrawButton(self, screen):
         pygame.draw.rect(screen, pygame.Color('black'), self.rect)
     
-    def drawInputBox(self, screen):
-        pygame.draw.rect(screen, pygame.Color('white'), self.rect)
+    #def drawInputBox(self, screen):
+        #pygame.draw.rect(screen, pygame.Color('white'), self.rect)
+    
+    def drawPauseButton(self, screen):
+        pygame.draw.rect(screen, pygame.Color('gray'), self.rect)
+        
 
 
 
@@ -142,6 +151,8 @@ def drawButtons():
     #for x in range(int((GRIDWIDTH/3 - BUTTONWIDTH)/2), GRIDWIDTH, int(GRIDWIDTH/3)):
     buttons[playButtonPos,buttonsYPos].drawPlayButton(screen)
     buttons[drawButtonPos, buttonsYPos].drawDrawButton(screen)
+    buttons[pauseButtonPos, buttonsYPos].drawPauseButton(screen)
+
         #Displaying solve button
     '''if x == 10:
             solveButton = BASICFONT.render(str("Solve"), True, (0,0,0))
@@ -164,8 +175,7 @@ def clicked(pos):
                         cells[x,y].setLife(1)
         #return False
     if buttons[playButtonPos,buttonsYPos].rect.collidepoint(pos):
-        time.sleep(1)
-        pauser()
+        time.sleep(0.15)
         '''continue = true
         while no new events, and while continue = true
             for all cells check if they are alive
@@ -177,14 +187,14 @@ def clicked(pos):
                     continue =false'''
         playGame()
         lifeAlert()
-        if staticCells() and not pauser():
+        if staticCells():
             playing = True
         else:
             playing = False
-        playing = paused
-        print(paused)
     if buttons[drawButtonPos,buttonsYPos].rect.collidepoint(pos):
-        switchDrawing()
+        toggleDrawing()
+    if buttons[pauseButtonPos, buttonsYPos].rect.collidepoint(pos):
+        playing = False
         
 
 def draw(pos):
@@ -204,20 +214,30 @@ def erase(pos):
 
 
 #make action a class??
-def switchDrawing():
+def toggleDrawing():
     global drawing
+    global erasure
     if drawing == True:
             drawing = False
     elif drawing == False:
+            erasure = False
             drawing = True
 
-def switchErasure():
+def toggleErasure():
     global erasure
+    global drawing
     if erasure == True:
         erasure = False
     elif erasure == False:
+        drawing = False
         erasure = True
-    
+
+def togglePlaying():
+    global playing
+    if playing == True:
+        playing = False
+    elif playing == False:
+        playing = True  
 
 def playGame():
     global cells
@@ -270,12 +290,6 @@ def staticCells():
                 cont = True
     return cont
 
-def pauser():
-    global paused
-    if paused == True:
-        paused = False
-    else:
-        paused = True
 
 
 main()
